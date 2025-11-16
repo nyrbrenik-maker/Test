@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GreenGrow - Cannabis Cultivation Tracker</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <!-- Loading Screen -->
+    <div id="loading-screen" class="loading-screen">
+        <div class="loading-content">
+            <i class="fas fa-leaf fa-3x loading-icon"></i>
+            <h2>GreenGrow</h2>
+            <p>Loading your cultivation data...</p>
+        </div>
+    </div>
+
+    <!-- Login Screen -->
+    <div id="login-screen" class="login-screen hidden">
+        <div class="login-container">
+            <div class="login-header">
+                <i class="fas fa-leaf fa-3x"></i>
+                <h1>GreenGrow</h1>
+                <p>Cannabis Cultivation Tracker</p>
+            </div>
+            <form id="login-form" class="login-form">
+                <div class="form-group">
+                    <label for="user-role">Select Role</label>
+                    <select id="user-role" required>
+                        <option value="">Choose your role...</option>
+                        <option value="admin">Admin</option>
+                        <option value="grower">Grower</option>
+                        <option value="client">Client (Read-Only)</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="user-name">Your Name</label>
+                    <input type="text" id="user-name" placeholder="Enter your name" required>
+                </div>
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-sign-in-alt"></i> Access GreenGrow
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Main App -->
+    <div id="app" class="app hidden">
+        <!-- Header -->
+        <header class="app-header">
+            <div class="header-left">
+                <button id="menu-toggle" class="menu-toggle">
+                    <i class="fas fa-bars"></i>
+                </button>
+                <div class="logo">
+                    <i class="fas fa-leaf"></i>
+                    <span>GreenGrow</span>
+                </div>
+            </div>
+            <div class="header-right">
+                <span class="user-info">
+                    <i class="fas fa-user-circle"></i>
+                    <span id="current-user"></span>
+                    <span class="user-role" id="current-role"></span>
+                </span>
+                <button id="logout-btn" class="btn-icon" title="Logout">
+                    <i class="fas fa-sign-out-alt"></i>
+                </button>
+            </div>
+        </header>
+
+        <!-- Sidebar Navigation -->
+        <nav class="sidebar" id="sidebar">
+            <ul class="nav-menu">
+                <li class="nav-item" data-page="dashboard">
+                    <i class="fas fa-chart-line"></i>
+                    <span>Dashboard</span>
+                </li>
+                <li class="nav-item admin-only grower-only" data-page="strains">
+                    <i class="fas fa-cannabis"></i>
+                    <span>Strains</span>
+                </li>
+                <li class="nav-item admin-only grower-only" data-page="bays">
+                    <i class="fas fa-warehouse"></i>
+                    <span>Bays</span>
+                </li>
+                <li class="nav-item admin-only grower-only" data-page="trays">
+                    <i class="fas fa-th-large"></i>
+                    <span>Trays</span>
+                </li>
+                <li class="nav-item admin-only grower-only" data-page="plants">
+                    <i class="fas fa-seedling"></i>
+                    <span>Plants</span>
+                </li>
+                <li class="nav-item admin-only" data-page="settings">
+                    <i class="fas fa-cog"></i>
+                    <span>Settings</span>
+                </li>
+            </ul>
+        </nav>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Dashboard Page -->
+            <div id="page-dashboard" class="page active">
+                <div class="page-header">
+                    <h1>Dashboard</h1>
+                    <button id="refresh-data" class="btn btn-secondary">
+                        <i class="fas fa-sync-alt"></i> Refresh
+                    </button>
+                </div>
+
+                <div class="stats-grid" id="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-icon">
+                            <i class="fas fa-seedling"></i>
+                        </div>
+                        <div class="stat-content">
+                            <h3 id="stat-total-plants">0</h3>
+                            <p>Total Plants</p>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon">
+                            <i class="fas fa-cannabis"></i>
+                        </div>
+                        <div class="stat-content">
+                            <h3 id="stat-active-strains">0</h3>
+                            <p>Active Strains</p>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon">
+                            <i class="fas fa-th-large"></i>
+                        </div>
+                        <div class="stat-content">
+                            <h3 id="stat-active-trays">0</h3>
+                            <p>Active Trays</p>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon">
+                            <i class="fas fa-calendar-alt"></i>
+                        </div>
+                        <div class="stat-content">
+                            <h3 id="stat-upcoming-harvests">0</h3>
+                            <p>Upcoming Harvests</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="dashboard-grid">
+                    <div class="dashboard-card">
+                        <h2><i class="fas fa-exclamation-triangle"></i> Active Grows</h2>
+                        <div id="active-grows-list" class="data-list"></div>
+                    </div>
+
+                    <div class="dashboard-card">
+                        <h2><i class="fas fa-calendar-check"></i> Upcoming Harvests</h2>
+                        <div id="upcoming-harvests-list" class="data-list"></div>
+                    </div>
+
+                    <div class="dashboard-card admin-only grower-only">
+                        <h2><i class="fas fa-thermometer-half"></i> Environmental Status</h2>
+                        <div id="environmental-status" class="data-list"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Strains Page -->
+            <div id="page-strains" class="page">
+                <div class="page-header">
+                    <h1>Strain Management</h1>
+                    <button id="add-strain-btn" class="btn btn-primary admin-only">
+                        <i class="fas fa-plus"></i> Add Strain
+                    </button>
+                </div>
+                <div class="table-container">
+                    <table id="strains-table" class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>Type</th>
+                                <th>Veg Days</th>
+                                <th>Flower Days</th>
+                                <th>THC %</th>
+                                <th>CBD %</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="strains-tbody"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Bays Page -->
+            <div id="page-bays" class="page">
+                <div class="page-header">
+                    <h1>Bay Management</h1>
+                    <button id="add-bay-btn" class="btn btn-primary admin-only">
+                        <i class="fas fa-plus"></i> Add Bay
+                    </button>
+                </div>
+                <div id="bays-grid" class="cards-grid"></div>
+            </div>
+
+            <!-- Trays Page -->
+            <div id="page-trays" class="page">
+                <div class="page-header">
+                    <h1>Tray Management</h1>
+                    <button id="add-tray-btn" class="btn btn-primary">
+                        <i class="fas fa-plus"></i> Add Tray
+                    </button>
+                </div>
+                <div class="table-container">
+                    <table id="trays-table" class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Tray Name</th>
+                                <th>Bay</th>
+                                <th>Strain(s)</th>
+                                <th>Date Started</th>
+                                <th>Status</th>
+                                <th>Plants</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="trays-tbody"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Plants Page -->
+            <div id="page-plants" class="page">
+                <div class="page-header">
+                    <h1>Plant Tracking</h1>
+                    <div class="header-actions">
+                        <button id="add-plant-btn" class="btn btn-primary">
+                            <i class="fas fa-plus"></i> Add Plant
+                        </button>
+                        <button id="bulk-add-plants-btn" class="btn btn-secondary">
+                            <i class="fas fa-layer-group"></i> Bulk Add
+                        </button>
+                    </div>
+                </div>
+                <div class="filters-bar">
+                    <select id="filter-bay" class="filter-select">
+                        <option value="">All Bays</option>
+                    </select>
+                    <select id="filter-tray" class="filter-select">
+                        <option value="">All Trays</option>
+                    </select>
+                    <select id="filter-strain" class="filter-select">
+                        <option value="">All Strains</option>
+                    </select>
+                    <select id="filter-stage" class="filter-select">
+                        <option value="">All Stages</option>
+                        <option value="seedling">Seedling</option>
+                        <option value="vegetative">Vegetative</option>
+                        <option value="flowering">Flowering</option>
+                        <option value="harvested">Harvested</option>
+                    </select>
+                </div>
+                <div class="table-container">
+                    <table id="plants-table" class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Plant ID</th>
+                                <th>Tray</th>
+                                <th>Bay</th>
+                                <th>Strain</th>
+                                <th>Stage</th>
+                                <th>Days in Stage</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="plants-tbody"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Settings Page -->
+            <div id="page-settings" class="page">
+                <div class="page-header">
+                    <h1>Settings</h1>
+                </div>
+                <div class="settings-container">
+                    <div class="settings-card">
+                        <h2><i class="fas fa-database"></i> Google Sheets Configuration</h2>
+                        <form id="sheets-config-form">
+                            <div class="form-group">
+                                <label for="api-key">Google Sheets API Key</label>
+                                <input type="password" id="api-key" placeholder="Enter your API key">
+                                <small>Your API key is stored locally in your browser</small>
+                            </div>
+                            <div class="form-group">
+                                <label for="sheet-id">Spreadsheet ID</label>
+                                <input type="text" id="sheet-id" placeholder="Enter your Google Sheets ID">
+                                <small>Find this in your Google Sheets URL</small>
+                            </div>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save"></i> Save Configuration
+                            </button>
+                            <button type="button" id="test-connection" class="btn btn-secondary">
+                                <i class="fas fa-plug"></i> Test Connection
+                            </button>
+                        </form>
+                    </div>
+
+                    <div class="settings-card">
+                        <h2><i class="fas fa-list"></i> Reference Data</h2>
+                        <div class="reference-data">
+                            <h3>Effects</h3>
+                            <div id="effects-list" class="tag-list"></div>
+                            <button id="manage-effects" class="btn btn-secondary">
+                                <i class="fas fa-edit"></i> Manage Effects
+                            </button>
+                        </div>
+                        <div class="reference-data">
+                            <h3>Terpenes</h3>
+                            <div id="terpenes-list" class="tag-list"></div>
+                            <button id="manage-terpenes" class="btn btn-secondary">
+                                <i class="fas fa-edit"></i> Manage Terpenes
+                            </button>
+                        </div>
+                        <div class="reference-data">
+                            <h3>Use Cases</h3>
+                            <div id="usecases-list" class="tag-list"></div>
+                            <button id="manage-usecases" class="btn btn-secondary">
+                                <i class="fas fa-edit"></i> Manage Use Cases
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Modal Container -->
+    <div id="modal-container"></div>
+
+    <!-- Toast Notifications -->
+    <div id="toast-container" class="toast-container"></div>
+
+    <!-- Scripts -->
+    <script src="js/config.js"></script>
+    <script src="js/api.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/ui.js"></script>
+    <script src="js/dashboard.js"></script>
+    <script src="js/strains.js"></script>
+    <script src="js/bays.js"></script>
+    <script src="js/trays.js"></script>
+    <script src="js/plants.js"></script>
+    <script src="js/settings.js"></script>
+    <script src="js/app.js"></script>
+</body>
+</html>
